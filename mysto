@@ -1,0 +1,300 @@
+<?php
+echo "BOT KLAIM 10K & NONTON 5 PASSION\n";
+echo "Input FIle Akun Marlboro (Email|Pass) : ";
+$fileakun = trim(fgets(STDIN));
+print PHP_EOL."Total Ada : ".count(explode("\n", str_replace("\r","",@file_get_contents($fileakun))))." Akun, Letsgo..\n";
+foreach(explode("\n", str_replace("\r", "", @file_get_contents($fileakun))) as $c => $akun)
+	{
+$pecah = explode("|", trim($akun));
+		$email = trim($pecah[0]);
+		$password = trim($pecah[1]);
+$cookie=cookie();
+echo "Eksekusi Passion $email  ";
+$login=login($cookie['device_id'],$cookie['session'],$cookie['csrf'],urlencode($email),$password);
+if(strpos($login['response'], '"message":"success"') !== false){
+	$get_token=get_token($cookie['device_id'],$login['session']);
+	echo "(".get_between($get_token['response'],'"point">','</div>').") = ";
+	$get_link=passion('https://www.marlboro.id/discovered/passion-land/',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$get_token['session'],$login['mm3rm4bre']);
+	preg_match_all('#\bhttps://www.marlboro.id/discovered/article/[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $get_link['response'], $grab);
+	$link = array(array_unique($grab[0]));
+	for($i=0;$i<7;$i++){
+	//$get_token=get_token($cookie['device_id'],$login['session']);
+	$k = array_rand($link[0]);
+	$id=substr($link[0][$k], strrpos($link[0][$k], '/' )+1);
+	$passion=passion('https://www.marlboro.id/discovered/article/'.$id,$cookie['device_id'],$get_token['token'],$get_token['r_token'],$get_token['session'],$login['mm3rm4bre']);
+	$nonton=nonton('https://www.marlboro.id/article/video-play/'.$id,$cookie['device_id'],$get_token['token'],$get_token['r_token'],$passion['session'],$login['mm3rm4bre'],$id,$passion['csrf']);
+	$update=update('https://www.marlboro.id/article/video-play/'.$id,$cookie['device_id'],$get_token['token'],$get_token['r_token'],$nonton['session'],$login['mm3rm4bre'],$id,$passion['csrf'],$nonton['logid']);
+	}
+	echo "Sukses Menonton 5 Video|";
+	$get_token=get_token($cookie['device_id'],$login['session']);
+	$cookie_kuis1=cookie_kuis('https://www.marlboro.id/discovered/passion-quiz-start',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$get_token['session'],$login['mm3rm4bre']);
+	$cookie_kuis2=cookie_kuis('https://www.marlboro.id/discovered/passion-quiz/question-1',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$cookie_kuis1['session'],$login['mm3rm4bre']);
+	$cookie_kuis3=cookie_kuis('https://www.marlboro.id/discovered/passion-quiz/question-2',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$cookie_kuis2['session'],$login['mm3rm4bre']);
+	$cookie_kuis4=cookie_kuis('https://www.marlboro.id/discovered/passion-quiz/question-3',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$cookie_kuis3['session'],$login['mm3rm4bre']);
+	$kuis=kuis($cookie['device_id'],$get_token['token'],$get_token['r_token'],$cookie_kuis4['session'],$login['mm3rm4bre'],$cookie_kuis4['csrf']);
+	$result=cookie_kuis('https://www.marlboro.id/discovered/passion-quiz-result/hustler',$cookie['device_id'],$get_token['token'],$get_token['r_token'],$kuis['session'],$login['mm3rm4bre']);
+	$get_point=get_token($cookie['device_id'],$result['session']);
+	if($kuis['status']=='success'){
+	echo "Sukses Quiz (".get_between($get_point['response'],'"point">','</div>').")\n";
+	
+	}
+	else{
+		echo "Gagal Quiz (".get_between($get_point['response'],'"point">','</div>').")\n";
+	}
+	}
+else{
+	echo " = Gagal Login\n";
+	}}
+function cookie(){
+$c = curl_init("https://www.marlboro.id/auth/login");
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_MAXREDIRS, 15);
+    curl_setopt($c, CURLOPT_TIMEOUT, 30);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+    $response = curl_exec($c);
+	$csrf=get_between($response, 'decide_csrf" value="', '" /><input');
+	$session=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$deviceid=get_between($response, 'Set-Cookie: deviceId=', '; Max-Age=');
+    return array(
+        'csrf' => $csrf,
+        'session' => $session,
+		'device_id' => $deviceid
+    );
+}
+function login($device_id,$session,$csrf,$email,$password){
+$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: scs=1; deviceId='.$device_id.'; decide_session='.$session;
+$c = curl_init("https://www.marlboro.id/auth/login");
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);;
+    curl_setopt($c, CURLOPT_POSTFIELDS, 'email='.$email.'&password='.$password.'&remember_me=remember_me&ref_uri=/&decide_csrf='.$csrf.'&param=&exception_redirect=false');
+    curl_setopt($c, CURLOPT_POST, true);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+    curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$session2=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$mm3rm4bre=get_between($response, '_mm3rm4bre_=', ';');
+    return array(
+        'session' => $session2,
+		'mm3rm4bre' => $mm3rm4bre,
+		'response' => $response
+    );
+}
+function get_token($device_id,$session){
+	$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: deviceId='.$device_id.'; decide_session='.$session.'; _p1K4r_=true; pikar_redirect=true';
+$c = curl_init("https://www.marlboro.id");
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_MAXREDIRS, 15);
+    curl_setopt($c, CURLOPT_TIMEOUT, 30);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+	curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$token=get_between($response,' token=',';');
+	$r_token=get_between($response,' refresh_token=',';');
+	$session2=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$point=get_between($response,'<div class="point">','</div>');
+    return array(
+        'token' => $token,
+        'r_token' => $r_token,
+		'session' => $session2,
+		'point' => $point,
+		'response' => $response
+    );
+	
+}
+function passion($url,$deviceId,$token,$refresh_token,$decide_session,$mm3rm4bre){
+	$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: deviceId='.$deviceId.'; token='.$token.'; refresh_token='.$refresh_token.'; decide_session='.$decide_session.'; insdrSV=4; scs=1; ins-gaSSId=6804cbff-54af-eb6a-5ac3-b56dd82ee3ba_1573243776; _p1K4r_=true; pikar_redirect=true; _gcl_au=1.1.698372179.1573243784; _mm3rm4bre_='.$mm3rm4bre.'; ev=1';
+$c = curl_init($url);
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_MAXREDIRS, 15);
+    curl_setopt($c, CURLOPT_TIMEOUT, 30);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+	curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$session=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$csrf=get_between($response, 'decide_csrf" value="', '" /><input');
+	return array(
+		'session' => $session,
+		'response' => $response,
+		'csrf' => $csrf
+    );
+	
+}
+function nonton($url,$deviceId,$token,$refresh_token,$decide_session,$mm3rm4bre,$id,$decide_csrf){
+$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: deviceId='.$deviceId.'; token='.$token.'; refresh_token='.$refresh_token.'; decide_session='.$decide_session.'; insdrSV=4; scs=1; ins-gaSSId=6804cbff-54af-eb6a-5ac3-b56dd82ee3ba_1573243776; _p1K4r_=true; pikar_redirect=true; _gcl_au=1.1.698372179.1573243784; _mm3rm4bre_='.$mm3rm4bre.'; ev=1; ins-product-id='.$id.'; current-currency=IDR';
+$c = curl_init($url);
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);;
+    curl_setopt($c, CURLOPT_POSTFIELDS, 'decide_csrf='.$decide_csrf.'&log_id=false&duration=0.036&total_duration=67.370666&fetch=1&g-recaptcha-response=');
+    curl_setopt($c, CURLOPT_POST, true);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+    curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$session=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$logid=get_between($response, '"log_id":"', '"');
+	return array(
+		'session' => $session,
+		'logid' => $logid
+    );
+}
+function update($url,$deviceId,$token,$refresh_token,$decide_session,$mm3rm4bre,$id,$decide_csrf,$logid){
+$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: deviceId='.$deviceId.'; token='.$token.'; refresh_token='.$refresh_token.'; decide_session='.$decide_session.'; insdrSV=4; scs=1; ins-gaSSId=6804cbff-54af-eb6a-5ac3-b56dd82ee3ba_1573243776; _p1K4r_=true; pikar_redirect=true; _gcl_au=1.1.698372179.1573243784; _mm3rm4bre_='.$mm3rm4bre.'; ev=1; ins-product-id='.$id.'; current-currency=IDR';
+$c = curl_init($url);
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);;
+    curl_setopt($c, CURLOPT_POSTFIELDS, 'decide_csrf='.$decide_csrf.'&log_id='.$logid.'&duration=67.738&total_duration=67.370666&fetch=1&g-recaptcha-response=');
+    curl_setopt($c, CURLOPT_POST, true);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+    curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	return $response;
+}
+function cookie_kuis($url,$deviceId,$token,$refresh_token,$decide_session,$mm3rm4bre){
+	$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Linux; Android 7.0; PLUS Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.98 Mobile Safari/537.36";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: scs=1; scs=1; deviceId='.$deviceId.'; insdrSV=15; _p1K4r_=true; pikar_redirect=true; ev=1; token='.$token.'; refresh_token='.$refresh_token.'; scs=1; decide_session='.$decide_session.'; _mm3rm4bre_='.$mm3rm4bre;
+$c = curl_init($url);
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_MAXREDIRS, 15);
+    curl_setopt($c, CURLOPT_TIMEOUT, 30);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+	curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$session=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$csrf=get_between($response, 'decide_csrf" value="', '" /><input');
+	return array(
+		'session' => $session,
+		'response' => $response,
+		'csrf' => $csrf
+    );
+}
+function kuis($deviceId,$token,$refresh_token,$decide_session,$mm3rm4bre,$csrf){
+$header = array();
+$header[] = "Host: www.marlboro.id";
+$header[] = "User-Agent: Mozilla/5.0 (Linux; Android 7.0; PLUS Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.98 Mobile Safari/537.36";
+$header[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+$header[] = "Accept-Language: en-US,en;q=0.5";
+$header[] = "Accept: application/json";
+$header[] = "Accept-Encoding: gzip, deflate, br";
+$header[] = "DNT: 1";    
+$header[] = "Connection: keep-alive";
+$header[] = "Referer: https://www.marlboro.id/discovered/passion-quiz/question-3";  
+$header[] = "Upgrade-Insecure-Requests: 1";
+$header[] = 'Cookie: scs=1;scs=1; deviceId='.$deviceId.'; token='.$token.'; refresh_token='.$refresh_token.'; scs=1; decide_session='.$decide_session.';insdrSV=7; scs=1; ins-gaSSId=38a1c03b-e7e0-3d95-ec0b-c1dbab747abe_1573249589; _p1K4r_=true; pikar_redirect=true; _gcl_au=1.1.878906618.1573249592; _mm3rm4bre_='.$mm3rm4bre.'; ev=1';
+$c = curl_init("https://www.marlboro.id/discovered/passion-quiz-insert");
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);;
+    curl_setopt($c, CURLOPT_POSTFIELDS, 'answer=3&decide_csrf='.$csrf);
+    curl_setopt($c, CURLOPT_POST, true);
+    curl_setopt($c, CURLOPT_ENCODING, "");
+    curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($c, CURLOPT_HEADER, true);
+    curl_setopt($c, CURLOPT_HTTPHEADER, $header);
+    $response = curl_exec($c);
+	$session=get_between($response, 'Set-Cookie: decide_session=', '; path=/;');
+	$status=get_between($response,'"message":"','","');
+	 return array(
+        'status' => $status,
+		'session' => $session
+    );
+}
+function get_between($string, $start, $end)
+    {
+        $string = " ".$string;
+        $ini = strpos($string,$start);
+        if ($ini == 0) return "";
+        $ini += strlen($start);
+        $len = strpos($string,$end,$ini) - $ini;
+        return substr($string,$ini,$len);
+    }
